@@ -1,0 +1,15 @@
+{
+  "name": "inchmeal-industries",
+  "private": true,
+  "workspaces": [
+    "cms",
+    "site",
+    "scripts/export-content"
+  ],
+  "scripts": {
+    "export": "npm run export --workspace=scripts/export-content",
+    "build-check": "npm run build --workspace=site",
+    "push": "npm run push --workspace=scripts/export-content",
+    "publish": "npm run export && npm run build-check && npm run push"
+  }
+}

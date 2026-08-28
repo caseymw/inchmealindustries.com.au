@@ -1,0 +1,20 @@
+# Dependencies
+**/node_modules
+
+# Environment / secrets
+.env
+cms/.env
+scripts/export-content/.env
+
+# Strapi local state
+cms/.tmp
+cms/database
+cms-data
+
+# Astro build output
+site/dist
+site/.astro
+
+# Editor / OS
+.DS_Store
+Thumbs.db
