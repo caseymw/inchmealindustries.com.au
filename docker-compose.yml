@@ -10,7 +10,7 @@ services:
     environment:
       DATABASE_FILENAME: database/data.db
     volumes:
-      - ./cms-data:/opt/app/database
+      - ${PVE_STACK_ROOT}/inchmeal/cms-data:/opt/app/database
 
   publisher:
     build:
