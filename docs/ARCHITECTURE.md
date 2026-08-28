@@ -225,7 +225,7 @@ Each phase lists what Claude Code can do autonomously vs. what needs Casey direc
   - All run inside the `publisher` container via `docker compose run --rm publisher npm run <script>`; `export` and `build-check` don't need `GITHUB_TOKEN` at all, only `push` (and therefore `publish`) does.
 - **Manual (Casey):** create a fine-grained GitHub PAT scoped to just the `inchmealindustries.com.au` repo, **Contents: Read and write** permission only, and put it in `scripts/export-content/.env` as `GITHUB_TOKEN`.
 
-### Phase 5 — CI/CD wiring (manual for Casey; Claude Code writes the setup doc) — Worker created 2026-08-28; R2 custom domain still open
+### Phase 5 — CI/CD wiring (manual for Casey; Claude Code writes the setup doc) — Worker deploying successfully 2026-08-28; R2 custom domain still open
 
 **Deviation from the original plan:** Cloudflare has retired the "Pages → Connect to Git" project-creation flow in favor of a unified **Workers with static assets** flow — classic Pages projects still run, but new ones are created as Workers now. Functionally equivalent (git push → static build → hosted, still $0/month), just configured via `wrangler.jsonc` instead of a Pages dashboard form. Wherever this document says "Pages project"/"`*.pages.dev`", read "Worker"/"`*.workers.dev`" — same role in the architecture, different Cloudflare product name.
 

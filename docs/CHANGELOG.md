@@ -121,9 +121,9 @@ Komodo on Casey's Docker host):
 
 **Still open** (see docs/ARCHITECTURE.md Section 7 for the full phase
 breakdown):
-- Phase 5: Worker created and pointed at `rebuild` (see entry below) —
-  confirm the redeploy succeeds, then set up the
-  `media.inchmealindustries.com.au` R2 custom domain.
+- Phase 5: Worker created, pointed at `rebuild`, build confirmed
+  green (see entry below) — the `media.inchmealindustries.com.au` R2
+  custom domain is the one thing left in this phase.
 - Phase 6: re-enter the 6 productions + About + Contact through the
   running Strapi admin UI.
 
@@ -152,6 +152,10 @@ role, different product name, still $0/month).
   monorepo structure. Expected failure, not a bug in the config.
   Fixed via **Settings → Build → Branch control**, repointed to
   `rebuild`.
-- Still open: confirm the redeploy against `rebuild` succeeds; the
-  `media.inchmealindustries.com.au` R2 custom domain (Section 6) is
-  not yet set up.
+- **Second issue hit:** the Cloudflare GitHub App's repo access was
+  scoped wrong (didn't include this repo, or lacked needed
+  permissions — Casey fixed via GitHub's app-installation settings).
+  Verified fixed with an empty trigger commit
+  (`784703c`) — **build succeeded** against `rebuild`.
+- Still open: the `media.inchmealindustries.com.au` R2 custom domain
+  (Section 6).
