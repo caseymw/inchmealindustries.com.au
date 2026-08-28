@@ -121,9 +121,6 @@ Komodo on Casey's Docker host):
 
 **Still open** (see docs/ARCHITECTURE.md Section 7 for the full phase
 breakdown):
-- Phase 5: Worker created, pointed at `rebuild`, build confirmed
-  green (see entry below) — the `media.inchmealindustries.com.au` R2
-  custom domain is the one thing left in this phase.
 - Phase 6: re-enter the 6 productions + About + Contact through the
   running Strapi admin UI.
 
@@ -157,5 +154,7 @@ role, different product name, still $0/month).
   permissions — Casey fixed via GitHub's app-installation settings).
   Verified fixed with an empty trigger commit
   (`784703c`) — **build succeeded** against `rebuild`.
-- Still open: the `media.inchmealindustries.com.au` R2 custom domain
-  (Section 6).
+- **R2 custom domain configured** by Casey. Verified: `media.inchmealindustries.com.au`
+  resolves through Cloudflare's edge and the bucket responds (a `404`
+  on the bucket root is R2's expected "no object at this path," not
+  an error — no file's been uploaded there yet). **Phase 5 complete.**
