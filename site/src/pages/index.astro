@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const productions = (await getCollection('productions')).sort((a, b) => {
+  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+  if (a.data.sortOrder !== b.data.sortOrder) return a.data.sortOrder - b.data.sortOrder;
+  return (b.data.year ?? 0) - (a.data.year ?? 0);
+});
+---
+
+<Base title="" activeNav="work">
+  <main role="main-home-wrapper" class="container">
+    <div class="row">
+      <section class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <article role="pge-title-content">
+          <header>
+            <h2><span>inchmeal industries</span> Little by little.</h2>
+          </header>
+          <p>Imagine, make, entertain.</p>
+        </article>
+      </section>
+
+      <section class="col-xs-12 col-sm-6 col-md-6 col-lg-6 grid">
+        <ul class="grid-lod effect-2" id="grid">
+          {productions.map((production) => (
+            <li>
+              <figure class="effect-oscar">
+                {production.data.images[0] && (
+                  <img src={production.data.images[0]} alt="" class="img-responsive" />
+                )}
+                <figcaption>
+                  <h2>{production.data.title}</h2>
+                  {production.data.tagline && <p>{production.data.tagline}</p>}
+                  <a href={`/productions/${production.data.slug}/`}>View more</a>
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="clearfix"></div>
+    </div>
+  </main>
+</Base>

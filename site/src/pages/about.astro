@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { paragraphs } from '../lib/text';
+
+const settingsEntries = await getCollection('settings');
+const settings = settingsEntries[0]?.data;
+---
+
+<Base title="About" activeNav="about">
+  <main role="main-inner-wrapper" class="container">
+    <div class="row">
+      <section class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <article role="pge-title-content">
+          <header>
+            <h2><span>we make stuff</span> {settings?.tagline ?? 'bringing productions to life'}</h2>
+          </header>
+          <p>for Community and Independent Theatre makers</p>
+        </article>
+      </section>
+
+      <section class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <article class="about-content">
+          {paragraphs(settings?.missionBlurb).map((p) => <p>{p}</p>)}
+        </article>
+      </section>
+
+      <div class="clearfix"></div>
+
+      {settings?.teamMembers && settings.teamMembers.length > 0 && (
+        <section class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+          <article class="about-content">
+            <ul>
+              {settings.teamMembers.map((member) => (
+                <li><h3>{member.name}</h3><h5>{member.role}</h5></li>
+              ))}
+            </ul>
+          </article>
+        </section>
+      )}
+    </div>
+  </main>
+</Base>

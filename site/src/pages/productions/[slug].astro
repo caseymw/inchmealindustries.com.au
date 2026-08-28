@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { paragraphs } from '../../lib/text';
+
+export async function getStaticPaths() {
+  const productions = await getCollection('productions');
+  return productions.map((production) => ({
+    params: { slug: production.data.slug },
+    props: { production },
+  }));
+}
+
+const { production } = Astro.props;
+const { title, credits, synopsis, ourRole, images } = production.data;
+---
+
+<Base title={title} activeNav="work">
+  <main role="main-inner-wrapper" class="container">
+    <div class="work-details">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-4">
+          <header role="work-title">
+            <h2>{title}</h2>
+          </header>
+        </div>
+
+        <div class="col-xs-12 col-sm-12 col-md-8">
+          <section>
+            {credits.length > 0 && (
+              <p>
+                {credits.map((credit, i) => (
+                  <>
+                    {i > 0 && <br />}
+                    {credit.role}: {credit.name}
+                  </>
+                ))}
+              </p>
+            )}
+
+            {paragraphs(synopsis).map((p) => (
+              <p style="font-style: italic;">{p}</p>
+            ))}
+
+            {ourRole && (
+              <p>
+                <strong>Role</strong>
+                <br />
+                {ourRole}
+              </p>
+            )}
+          </section>
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+
+      {images.length > 0 && (
+        <div class="work-images grid">
+          <ul class="grid-lod effect-2" id="grid">
+            {images.map((src) => (
+              <li><img src={src} alt="" class="img-responsive" /></li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </main>
+</Base>

@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const settingsEntries = await getCollection('settings');
+const settings = settingsEntries[0]?.data;
+---
+
+<Base title="Contact" activeNav="contact">
+  <main role="main-inner-wrapper" class="container">
+    <div class="row">
+      <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+        <article role="pge-title-content" class="contact-header">
+          <header>
+            <h2><span>Hey There!</span> Need our help?</h2>
+          </header>
+          <p>
+            {settings?.phone && (
+              <a href={`tel:${settings.phone}`}><i class="fa fa-phone" aria-hidden="true"></i> {settings.phone}</a>
+            )}
+            {settings?.email && (
+              <a href={`mailto:${settings.email}`}><i class="fa fa-envelope" aria-hidden="true"></i> {settings.email}</a>
+            )}
+          </p>
+        </article>
+      </div>
+
+      <div class="clearfix"></div>
+    </div>
+  </main>
+</Base>

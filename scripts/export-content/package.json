@@ -1,0 +1,13 @@
+{
+  "name": "export-content",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "node export.js",
+    "push": "node push.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

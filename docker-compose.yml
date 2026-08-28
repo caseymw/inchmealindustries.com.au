@@ -1,0 +1,26 @@
+services:
+  strapi:
+    build:
+      context: ./cms
+    restart: unless-stopped
+    ports:
+      - "1337:1337"
+    env_file:
+      - cms/.env
+    environment:
+      DATABASE_FILENAME: database/data.db
+    volumes:
+      - ./cms-data:/opt/app/database
+
+  publisher:
+    build:
+      context: ./scripts/export-content
+    profiles:
+      - tools
+    env_file:
+      - scripts/export-content/.env
+    environment:
+      STRAPI_URL: http://strapi:1337
+    volumes:
+      - .:/workspace
+    working_dir: /workspace

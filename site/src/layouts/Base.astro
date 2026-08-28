@@ -1,0 +1,89 @@
+---
+interface Props {
+  title: string;
+  activeNav: 'work' | 'about' | 'contact' | null;
+}
+
+const { title, activeNav = null } = Astro.props;
+
+const navItems: { key: 'work' | 'about' | 'contact'; href: string; label: string }[] = [
+  { key: 'work', href: '/', label: 'Work' },
+  { key: 'about', href: '/about/', label: 'About' },
+  { key: 'contact', href: '/contact/', label: 'Contact' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>:: inchmeal industries{title ? ` | ${title}` : ''} ::</title>
+    <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+
+    <link href="/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/css/responsive.css" rel="stylesheet" type="text/css" />
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="/css/effects/set2.css" rel="stylesheet" type="text/css" />
+    <link href="/css/effects/normalize.css" rel="stylesheet" type="text/css" />
+    <link href="/css/effects/component.css" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+    <header role="header">
+      <div class="container">
+        <h1>
+          <a href="/" title="inchmeal industries">
+            <img src="/images/logo.png" title="inchmeal industries" alt="inchmeal industries" />
+          </a>
+        </h1>
+
+        <nav role="header-nav" class="navy">
+          <ul>
+            {navItems.map((item) => (
+              <li class={item.key === activeNav ? 'nav-active' : undefined}>
+                <a href={item.href} title={item.label}>{item.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer role="footer">
+      <h1>
+        <a href="/" title="inchmeal industries">
+          <img src="/images/logo.png" title="inchmeal industries" alt="inchmeal industries" />
+        </a>
+      </h1>
+
+      <nav role="footer-nav">
+        <ul>
+          {navItems.map((item) => (
+            <li><a href={item.href} title={item.label}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <ul role="social-icons">
+        <li><a href="https://www.instagram.com/inchmeal_industries"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+      </ul>
+
+      <p class="copy-right">&copy; {new Date().getFullYear()} inchmeal industries. All rights Reserved</p>
+    </footer>
+
+    <script is:inline src="/js/jquery.min.js"></script>
+    <script is:inline src="/js/nav.js"></script>
+    <script is:inline src="/js/custom.js"></script>
+    <script is:inline src="/js/bootstrap.min.js"></script>
+    <script is:inline src="/js/effects/masonry.pkgd.min.js"></script>
+    <script is:inline src="/js/effects/imagesloaded.js"></script>
+    <script is:inline src="/js/effects/classie.js"></script>
+    <script is:inline src="/js/effects/AnimOnScroll.js"></script>
+    <script is:inline src="/js/effects/modernizr.custom.js"></script>
+    <script is:inline src="/js/html5shiv.js"></script>
+  </body>
+</html>
