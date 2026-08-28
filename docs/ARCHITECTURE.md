@@ -1,6 +1,6 @@
 # Inchmeal Industries: Strapi → Astro → Cloudflare Migration Plan
 
-**Status:** Ready for implementation
+**Status:** Phases 1-4 implemented on `rebuild` (2026-08-28) — see docs/CHANGELOG.md for what actually happened and any deviations found during implementation. `main` untouched.
 **Owner:** Casey
 **Prepared for:** handoff to Claude Code
 **Date:** 2026-08-27
@@ -188,31 +188,31 @@ All open items from the initial draft are now resolved — nothing left blocking
 
 Each phase lists what Claude Code can do autonomously vs. what needs Casey directly (mostly: clicking through account/dashboard UIs that require Casey's own login).
 
-### Phase 0 — Discovery (done — see Section 6.0)
+### Phase 0 — Discovery ✅ done — see Section 6.0
 - Existing repo inspected: plain static HTML, 6 real productions + About + Contact, Blog/works-details are unused template cruft. Content model in Section 4 is already based on these findings.
 - Remaining discovery-adjacent step for Claude Code: when starting Phase 3, pull the actual CSS/fonts/images (`css/`, `fonts/`, `images/home-images/`, `images/about-images/`) from `caseymw/inchmealindustries.com.au` to match the current look and feel rather than re-designing from scratch.
 
-### Phase 1 — Repo scaffold (Claude Code)
+### Phase 1 — Repo scaffold (Claude Code) ✅ done, 2026-08-28
 - In the existing repo, create and switch to a `rebuild` branch — **do not commit any of this to `main`** (see Section 5.2).
 - Add the monorepo layout from Section 5 (`cms/`, `site/`, `scripts/`, `docs/`) alongside the existing static files, npm workspaces at the root. The current `index.html`, `about.html`, etc. can stay in place on this branch untouched (or be moved aside) — they only matter for reference until the branch is merged.
 - `.gitignore`: `cms/.tmp`, `cms/database`, `**/node_modules`, `.env`, `site/dist`.
 - Commit this document as `docs/ARCHITECTURE.md`.
 
-### Phase 2 — Strapi setup (Claude Code, some manual steps for Casey)
+### Phase 2 — Strapi setup (Claude Code, some manual steps for Casey) — Claude Code parts ✅ done, 2026-08-28; manual steps still open
 - Scaffold Strapi in `cms/` with SQLite.
 - Write `cms/Dockerfile` and the root `docker-compose.yml` per Section 5.1 — bind-mounted SQLite data dir, `env_file`, port `1337` published, `restart: unless-stopped`.
 - Define the content types from Section 4 as versioned schema files under `cms/src/api/`.
 - Install and configure an S3-compatible upload provider pointed at R2 (e.g. `strapi-provider-cloudflare-r2`), reading account ID / bucket / keys from env vars — never hardcoded.
 - **Manual (Casey):** create the R2 bucket and API token in the Cloudflare dashboard; generate Strapi's security keys once and put them in `cms/.env` on the Docker host; run `docker compose up -d` on that host; generate a Strapi API token from the running admin UI (needs an interactive login) for the export script to use.
 
-### Phase 3 — Astro site scaffold (Claude Code)
+### Phase 3 — Astro site scaffold (Claude Code) ✅ done, 2026-08-28
 - Scaffold `site/` (static output).
 - Define content collections (`productions`, `pages`, `settings`) in `site/src/content/config.ts` with schemas matching the exported JSON shape.
 - Build routes: production portfolio index (list, sortable by `year`/`featured`), production detail pages, About and Contact pages sourced from `SiteSettings`.
 - Port over the existing site's look and feel using what Phase 0 found.
 - Configure `astro.config.mjs`: final site URL, remote image patterns allowing the R2 domain.
 
-### Phase 4 — Export script + `publisher` container (Claude Code)
+### Phase 4 — Export script + `publisher` container (Claude Code) — Claude Code parts ✅ done, 2026-08-28; manual PAT step still open
 - `scripts/export-content/`: reads `STRAPI_URL` (`http://strapi:1337` — the Compose service name, not `localhost`, since this now runs as its own container on the same Docker network) + `STRAPI_API_TOKEN` from env, fetches all published entries per content type (populated relations/media), writes each as JSON into the matching `site/src/content/<type>/<slug>.json`.
 - Deletes stale files: any file whose slug is no longer present/published in Strapi gets removed, so unpublishing in Strapi actually removes it from the site.
 - Prints a summary (added/changed/removed) after each run.
@@ -225,7 +225,7 @@ Each phase lists what Claude Code can do autonomously vs. what needs Casey direc
   - All run inside the `publisher` container via `docker compose run --rm publisher npm run <script>`; `export` and `build-check` don't need `GITHUB_TOKEN` at all, only `push` (and therefore `publish`) does.
 - **Manual (Casey):** create a fine-grained GitHub PAT scoped to just the `inchmealindustries.com.au` repo, **Contents: Read and write** permission only, and put it in `scripts/export-content/.env` as `GITHUB_TOKEN`.
 
-### Phase 5 — CI/CD wiring (manual for Casey; Claude Code writes the setup doc)
+### Phase 5 — CI/CD wiring (manual for Casey; Claude Code writes the setup doc) — not started
 - **Manual (Casey):** in the Cloudflare dashboard, create a Pages project connected directly to the GitHub repo (requires Casey's GitHub OAuth). Build command `npm run build --workspace=site`, output directory `site/dist`, **production branch set to `rebuild`** for now (see Section 5.2) — this gives a live `*.pages.dev` preview without touching the real domain.
 - **Manual (Casey):** set up the R2 custom domain `media.inchmealindustries.com.au` (Section 6).
 - Custom domain (`inchmealindustries.com.au`) is *not* attached to the Pages project yet — that's a Phase 8 cutover step, done only once everything's verified.
