@@ -318,3 +318,29 @@ MCP auth expiry. Both were worked around via direct REST rather than
 solved. Worth watching for on any future schema change made through
 this MCP connection — the REST bypass pattern above is the fallback
 if it recurs.
+
+**End of session.** Migration status: Phases 1-6 done. Filed two
+follow-up issues from a final content review:
+[#2](https://github.com/caseymw/inchmealindustries.com.au/issues/2) —
+the site logo is a hardcoded static asset (`site/public/images/logo.png`,
+referenced directly in `Base.astro`), never modeled in `SiteSettings`,
+so it can't be changed without a code edit;
+[#3](https://github.com/caseymw/inchmealindustries.com.au/issues/3) —
+R2 object keys/paths don't consistently reflect Strapi's Media
+Library naming/folder structure (the clearest example: an upload's
+resized format variants land at the bucket root while the original
+sits under a `/1/` folder prefix).
+
+**Still open before Phase 7:**
+- Revoke the temporary Full-access Content API token (used for the
+  image upload and the `showUrl`/credit-link backfill) — it was never
+  meant to be long-lived.
+- Re-run the `claude mcp add` swap for `strapi-mcp` next session if
+  MCP tools are needed again — the connection ended this session in
+  the "requires re-authorization (token expired)" state.
+- Issues [#1](https://github.com/caseymw/inchmealindustries.com.au/issues/1),
+  [#2](https://github.com/caseymw/inchmealindustries.com.au/issues/2),
+  [#3](https://github.com/caseymw/inchmealindustries.com.au/issues/3)
+  are open but non-blocking for Phase 7.
+- Phase 7 (real export → build → deploy against the now-complete
+  Strapi content) hasn't been run yet.
