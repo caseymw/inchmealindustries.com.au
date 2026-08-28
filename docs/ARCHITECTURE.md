@@ -198,7 +198,7 @@ Each phase lists what Claude Code can do autonomously vs. what needs Casey direc
 - `.gitignore`: `cms/.tmp`, `cms/database`, `**/node_modules`, `.env`, `site/dist`.
 - Commit this document as `docs/ARCHITECTURE.md`.
 
-### Phase 2 — Strapi setup (Claude Code, some manual steps for Casey) — Claude Code parts ✅ done, 2026-08-28; manual steps still open
+### Phase 2 — Strapi setup (Claude Code, some manual steps for Casey) — ✅ done, 2026-08-28
 - Scaffold Strapi in `cms/` with SQLite.
 - Write `cms/Dockerfile` and the root `docker-compose.yml` per Section 5.1 — bind-mounted SQLite data dir, `env_file`, port `1337` published, `restart: unless-stopped`.
 - Define the content types from Section 4 as versioned schema files under `cms/src/api/`.
@@ -212,7 +212,7 @@ Each phase lists what Claude Code can do autonomously vs. what needs Casey direc
 - Port over the existing site's look and feel using what Phase 0 found.
 - Configure `astro.config.mjs`: final site URL, remote image patterns allowing the R2 domain.
 
-### Phase 4 — Export script + `publisher` container (Claude Code) — Claude Code parts ✅ done, 2026-08-28; manual PAT step still open
+### Phase 4 — Export script + `publisher` container (Claude Code) — ✅ done, 2026-08-28
 - `scripts/export-content/`: reads `STRAPI_URL` (`http://strapi:1337` — the Compose service name, not `localhost`, since this now runs as its own container on the same Docker network) + `STRAPI_API_TOKEN` from env, fetches all published entries per content type (populated relations/media), writes each as JSON into the matching `site/src/content/<type>/<slug>.json`.
 - Deletes stale files: any file whose slug is no longer present/published in Strapi gets removed, so unpublishing in Strapi actually removes it from the site.
 - Prints a summary (added/changed/removed) after each run.

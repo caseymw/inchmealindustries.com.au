@@ -11,5 +11,8 @@
     "build-check": "npm run build --workspace=site",
     "push": "npm run push --workspace=scripts/export-content",
     "publish": "npm run export && npm run build-check && npm run push"
+  },
+  "devDependencies": {
+    "wrangler": "^4.127.0"
   }
 }

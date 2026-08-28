@@ -86,16 +86,48 @@ Pushed to `origin/rebuild`.
 declarations — showed up as untracked after the first `npm run develop`
 run and don't belong in git).
 
-**Still open** (see docs/ARCHITECTURE.md Section 7 for the full phase
-breakdown) — all require Casey directly:
-- Phase 2 manual: create the R2 bucket + API token in the Cloudflare
-  dashboard; generate Strapi's *production* security keys on the real
-  Docker host (keep them stable, don't reuse the local dev ones generated
-  during this session).
-- Phase 4 manual: mint the fine-grained GitHub PAT for
+**Phase 2 and Phase 4 manual steps completed by Casey** (deployed via
+Komodo on Casey's Docker host):
+- Created the `media-inchmealindustries-web` R2 bucket and an
+  **Account**-scoped R2 API token (Object Read & Write, scoped to that
+  bucket only), populated into `cms/.env`.
+- Generated production Strapi security keys (`APP_KEYS`,
+  `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`,
+  `JWT_SECRET`, `ENCRYPTION_KEY`) and put them in `cms/.env` on the
+  Docker host — replacing the `cms/.env.example` placeholder values.
+- Deployed the `strapi` service as a Komodo Stack. Changed the SQLite
+  bind mount from the originally-planned repo-relative `./cms-data` to
+  `${PVE_STACK_ROOT}/inchmeal/cms-data` (Komodo's appdata convention),
+  so persistent CMS data lives outside the git checkout and can't be
+  wiped by git operations on the clone. Set via Komodo's Stack
+  Environment field (`PVE_STACK_ROOT=[[PVE_STACK_ROOT]]`), which Komodo
+  interpolates into the Stack's root `.env` before running
+  `docker compose up --env-file .env` — `${PVE_STACK_ROOT}` substitution
+  happens at the Compose level and is unrelated to `cms/.env`, which is
+  only loaded into the Strapi container at runtime via `env_file:`.
+- Hit and fixed an `EACCES: permission denied, mkdir
+  '/opt/app/database/migrations'` error on first boot: the bind-mounted
+  host directory was auto-created as `root:root`, but the Strapi image
+  runs as the non-root `node` user (uid 1000). Fixed with
+  `chown -R 1000:1000` on the host directory — the `chown` baked into
+  `cms/Dockerfile` only applies to the image's own layer, not to a bind
+  mount that overlays it at runtime.
+- Completed first-run admin account setup via the Strapi admin UI, then
+  generated a Strapi API token there for the export script
+  (`STRAPI_API_TOKEN` in `scripts/export-content/.env`).
+- Minted the fine-grained GitHub PAT (Contents: Read and write only,
+  scoped to this repo) for `GITHUB_TOKEN` in
   `scripts/export-content/.env`.
+
+**Still open** (see docs/ARCHITECTURE.md Section 7 for the full phase
+breakdown):
 - Phase 5: create the Cloudflare Pages project (production branch
   `rebuild` for now) and the `media.inchmealindustries.com.au` R2 custom
   domain.
 - Phase 6: re-enter the 6 productions + About + Contact through the
   running Strapi admin UI.
+
+**Follow-up filed:** [#1](https://github.com/caseymw/inchmealindustries.com.au/issues/1) —
+`cms/Dockerfile` is a hand-rolled multi-stage build rather than
+Strapi's official Docker image, for maintainability/upgrade-path
+reasons (see issue for detail).
