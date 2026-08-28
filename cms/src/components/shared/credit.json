@@ -13,6 +13,9 @@
     "name": {
       "type": "string",
       "required": true
+    },
+    "url": {
+      "type": "string"
     }
   }
 }

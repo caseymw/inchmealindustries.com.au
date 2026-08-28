@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 }
 
 const { production } = Astro.props;
-const { title, credits, synopsis, ourRole, images } = production.data;
+const { title, showUrl, credits, synopsis, ourRole, images } = production.data;
 ---
 
 <Base title={title} activeNav="work">
@@ -22,6 +22,9 @@ const { title, credits, synopsis, ourRole, images } = production.data;
         <div class="col-xs-12 col-sm-12 col-md-4">
           <header role="work-title">
             <h2>{title}</h2>
+            {showUrl && (
+              <a href={showUrl}>Visit online <i class="fa fa-external-link" aria-hidden="true"></i></a>
+            )}
           </header>
         </div>
 
@@ -32,7 +35,11 @@ const { title, credits, synopsis, ourRole, images } = production.data;
                 {credits.map((credit, i) => (
                   <>
                     {i > 0 && <br />}
-                    {credit.role}: {credit.name}
+                    {credit.role}: {credit.url ? (
+                      <a href={credit.url}>{credit.name} <i class="fa fa-external-link" aria-hidden="true"></i></a>
+                    ) : (
+                      credit.name
+                    )}
                   </>
                 ))}
               </p>

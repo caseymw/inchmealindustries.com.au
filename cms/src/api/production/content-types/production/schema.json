@@ -24,6 +24,9 @@
     "tagline": {
       "type": "string"
     },
+    "showUrl": {
+      "type": "string"
+    },
     "synopsis": {
       "type": "richtext"
     },
