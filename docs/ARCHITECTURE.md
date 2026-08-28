@@ -225,10 +225,15 @@ Each phase lists what Claude Code can do autonomously vs. what needs Casey direc
   - All run inside the `publisher` container via `docker compose run --rm publisher npm run <script>`; `export` and `build-check` don't need `GITHUB_TOKEN` at all, only `push` (and therefore `publish`) does.
 - **Manual (Casey):** create a fine-grained GitHub PAT scoped to just the `inchmealindustries.com.au` repo, **Contents: Read and write** permission only, and put it in `scripts/export-content/.env` as `GITHUB_TOKEN`.
 
-### Phase 5 — CI/CD wiring (manual for Casey; Claude Code writes the setup doc) — not started
-- **Manual (Casey):** in the Cloudflare dashboard, create a Pages project connected directly to the GitHub repo (requires Casey's GitHub OAuth). Build command `npm run build --workspace=site`, output directory `site/dist`, **production branch set to `rebuild`** for now (see Section 5.2) — this gives a live `*.pages.dev` preview without touching the real domain.
-- **Manual (Casey):** set up the R2 custom domain `media.inchmealindustries.com.au` (Section 6).
-- Custom domain (`inchmealindustries.com.au`) is *not* attached to the Pages project yet — that's a Phase 8 cutover step, done only once everything's verified.
+### Phase 5 — CI/CD wiring (manual for Casey; Claude Code writes the setup doc) — Worker created 2026-08-28; R2 custom domain still open
+
+**Deviation from the original plan:** Cloudflare has retired the "Pages → Connect to Git" project-creation flow in favor of a unified **Workers with static assets** flow — classic Pages projects still run, but new ones are created as Workers now. Functionally equivalent (git push → static build → hosted, still $0/month), just configured via `wrangler.jsonc` instead of a Pages dashboard form. Wherever this document says "Pages project"/"`*.pages.dev`", read "Worker"/"`*.workers.dev`" — same role in the architecture, different Cloudflare product name.
+
+- **Claude Code:** added `wrangler` as a root devDependency and committed `wrangler.jsonc` at the repo root (`assets.directory: "site/dist"`, no custom 404 handling yet — `site/` has no 404 page). Validated with `npx wrangler deploy --dry-run` before Casey deployed.
+- **Manual (Casey):** in the Cloudflare dashboard, **Workers & Pages → Create application → Pages → Connect to Git** (per the note above, this now lands you in the Workers flow) connected to the GitHub repo. Build command `npm run build --workspace=site`, deploy command `npx wrangler deploy` (default), path `/`.
+- **Gotcha hit and fixed:** the project-creation screen has **no production-branch selector** — it silently defaults to the repo's default branch (`main`), which doesn't have the monorepo structure and fails the build. First deploy failed as expected. Fixed via **Settings → Build → Branch control**, changed to `rebuild`. **Anyone recreating this Worker from scratch needs to do this same fix immediately after creation** — it's not offered up front.
+- **Manual (Casey):** set up the R2 custom domain `media.inchmealindustries.com.au` (Section 6) — still open.
+- Custom domain (`inchmealindustries.com.au`) is *not* attached to the Worker yet — that's a Phase 8 cutover step, done only once everything's verified.
 - No GitHub Actions workflow is required for deployment. (Optional, later: a lightweight Actions workflow purely for pre-merge checks like `astro check` or a link checker — not needed for MVP.)
 
 ### Phase 6 — Content migration (Casey, Claude Code assists)

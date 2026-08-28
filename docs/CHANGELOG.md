@@ -121,9 +121,9 @@ Komodo on Casey's Docker host):
 
 **Still open** (see docs/ARCHITECTURE.md Section 7 for the full phase
 breakdown):
-- Phase 5: create the Cloudflare Pages project (production branch
-  `rebuild` for now) and the `media.inchmealindustries.com.au` R2 custom
-  domain.
+- Phase 5: Worker created and pointed at `rebuild` (see entry below) —
+  confirm the redeploy succeeds, then set up the
+  `media.inchmealindustries.com.au` R2 custom domain.
 - Phase 6: re-enter the 6 productions + About + Contact through the
   running Strapi admin UI.
 
@@ -131,3 +131,27 @@ breakdown):
 `cms/Dockerfile` is a hand-rolled multi-stage build rather than
 Strapi's official Docker image, for maintainability/upgrade-path
 reasons (see issue for detail).
+
+**Phase 5 — Cloudflare hosting, started.** Discovered mid-setup that
+Cloudflare has replaced the classic "Pages → Connect to Git" project
+creation flow with a unified **Workers with static assets** flow;
+Pages projects still run, but new ones are created as Workers now
+(see ARCHITECTURE.md Phase 5 for the full note — same architectural
+role, different product name, still $0/month).
+
+- Added `wrangler` as a root devDependency and committed
+  `wrangler.jsonc` (`assets.directory: "site/dist"`) so the dashboard's
+  `npx wrangler deploy` deploy command has something to work with.
+  Validated locally first: `npm run build --workspace=site` then
+  `npx wrangler deploy --dry-run` read all 76 files from `site/dist`
+  cleanly before Casey touched the dashboard.
+- Casey created the Worker via **Workers & Pages → Create application
+  → Pages → Connect to Git**, repo `caseymw/inchmealindustries.com.au`.
+- **First deploy failed** — the creation screen has no production-branch
+  selector and silently defaulted to `main`, which doesn't have the
+  monorepo structure. Expected failure, not a bug in the config.
+  Fixed via **Settings → Build → Branch control**, repointed to
+  `rebuild`.
+- Still open: confirm the redeploy against `rebuild` succeeds; the
+  `media.inchmealindustries.com.au` R2 custom domain (Section 6) is
+  not yet set up.
