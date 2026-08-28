@@ -158,3 +158,76 @@ role, different product name, still $0/month).
   resolves through Cloudflare's edge and the bucket responds (a `404`
   on the bucket root is R2's expected "no object at this path," not
   an error — no file's been uploaded there yet). **Phase 5 complete.**
+
+**Phase 6 — content migration, text content done via Strapi's built-in
+MCP server instead of manual admin-UI entry.** Casey asked whether
+Claude Code could do Phase 6 directly; Strapi 5.47+ ships a built-in
+MCP server (off by default), which turned out to be viable instead of
+hand-typing everything into the admin UI.
+
+Getting it connected took several rounds of debugging, worth recording
+since it'll bite anyone re-doing this setup:
+
+- Enabled via `mcp: { enabled: true }` in `cms/config/server.js`
+  (`c57cbb5`) — off by default, no plugin install needed, just this
+  config key.
+- **First gotcha:** a Komodo "Deploy" that only restarts the existing
+  container doesn't pick up the change — `config/server.js` is baked
+  into the image at build time (`COPY . .` in `cms/Dockerfile`), not
+  bind-mounted like the SQLite data dir. Needed an actual rebuild
+  (`docker compose build --no-cache strapi`, or Komodo's Destroy +
+  Deploy) before `/mcp` started responding as a real route instead of
+  falling through to Strapi's generic 404/405 handling.
+- **Second gotcha:** the MCP server authenticates with a Strapi
+  **Admin Token** (Settings → Administration Panel → Admin Tokens),
+  which is a completely different token type from the **API Token**
+  (Settings → API Tokens, Content API) already in use for
+  `STRAPI_API_TOKEN` in the export script. Using the wrong token type
+  gets a JSON-RPC `401 Authentication required` even though the
+  `/mcp` endpoint itself is reachable and correctly configured.
+- **Third gotcha, Windows-specific:** registering the server with
+  `claude mcp add --transport http ...` from a terminal wrote the
+  config under the project key `D:/GIT_Repos/...` (capital drive
+  letter), but the VS Code extension session resolved its own project
+  key as `d:/GIT_Repos/...` (lowercase) — two different entries in
+  `~/.claude.json` for the same folder, depending on which process's
+  `cwd` happened to report which case. Windows drive-letter casing
+  isn't guaranteed stable across subprocesses in this environment.
+  Fixed by duplicating the `strapi-mcp` registration into both
+  casings; a config backup was written alongside it
+  (`~/.claude.json.bak-<timestamp>`) before editing.
+- Along the way, a token got printed into this session's transcript
+  while debugging the config file (a `node -e` dump of the whole
+  config, not intentional) — flagged to Casey at the time; nothing
+  external saw it, but worth knowing if session transcripts are ever
+  shared.
+
+Once connected, used the MCP tools (`create_production`,
+`write_site-setting`, `publish_production`, `publish_site-setting`)
+to enter and publish all real content, sourced from the corresponding
+`*-details.html` / `about.html` / `contact.html` files in the old
+static site:
+
+- All 6 productions (33 Variations, The Appleton Ladies' Potato Race,
+  Gaslight, Speed, The Last 5 Years, Titanic) — title, tagline (where
+  the old site had one — only Speed/Titanic did), synopsis, `ourRole`,
+  `credits` (writer/producer/director plus a `Venue` credit per
+  venue — Speed and Titanic each toured multiple venues, which the
+  schema doesn't have a dedicated field for), `year` (most recent run
+  for multi-venue shows), and `sortOrder` matching the homepage grid's
+  existing order. Minor obvious typos in the source HTML (e.g. "Club
+  RydeX", "Equipent", "increidble", "complient", "thier") were
+  corrected during entry rather than carried over verbatim.
+- `SiteSettings`: tagline, mission blurb, the one confirmed team
+  member (Casey Moon-Watton, Chief Everything Officer), contact email,
+  Instagram social link.
+- All entries published (not left as drafts).
+
+**Known gap: no images uploaded yet.** The MCP tools' `images` field
+takes existing media IDs, not file uploads — Strapi's MCP server
+doesn't expose a media-upload tool (uploads are multipart, not
+JSON-RPC). The production photos are already sitting in
+`site/public/images/work/` from Phase 3 but haven't been pushed into
+Strapi's media library / R2. Still needs either manual drag-and-drop
+in the admin UI per production, or a small one-off script against
+Strapi's REST upload endpoint using `STRAPI_API_TOKEN`.

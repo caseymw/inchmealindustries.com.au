@@ -1,6 +1,6 @@
 # Inchmeal Industries: Strapi → Astro → Cloudflare Migration Plan
 
-**Status:** Phases 1-4 implemented on `rebuild` (2026-08-28) — see docs/CHANGELOG.md for what actually happened and any deviations found during implementation. `main` untouched.
+**Status:** Phases 1-5 implemented, Phase 6 text content done (images still open), all on `rebuild` (2026-08-28) — see docs/CHANGELOG.md for what actually happened and any deviations found during implementation. `main` untouched.
 **Owner:** Casey
 **Prepared for:** handoff to Claude Code
 **Date:** 2026-08-27
@@ -236,8 +236,9 @@ Each phase lists what Claude Code can do autonomously vs. what needs Casey direc
 - Custom domain (`inchmealindustries.com.au`) is *not* attached to the Worker yet — that's a Phase 8 cutover step, done only once everything's verified.
 - No GitHub Actions workflow is required for deployment. (Optional, later: a lightweight Actions workflow purely for pre-merge checks like `astro check` or a link checker — not needed for MVP.)
 
-### Phase 6 — Content migration (Casey, Claude Code assists)
-- Only 6 productions + About + Contact — small enough to re-enter directly through the Strapi admin UI rather than writing a one-off import script. This also doubles as end-to-end validation that the content model actually works. The exact text/credits for each production can be lifted straight from the corresponding `*-details.html` file in the existing repo.
+### Phase 6 — Content migration (Casey, Claude Code assists) — text content ✅ done, 2026-08-28; images still open
+
+**Deviation from the original plan:** rather than Casey re-typing content through the admin UI, Strapi's built-in MCP server (5.47+, off by default — see docs/CHANGELOG.md for the enable/auth/Windows gotchas) let Claude Code enter and publish it directly. All 6 productions plus SiteSettings (About/Contact) are live, sourced from the corresponding `*-details.html` files. Images are not yet uploaded — the MCP tools take media IDs, not file uploads, and there's no upload tool exposed; still needs either manual admin-UI drag-and-drop or a one-off REST upload script.
 
 ### Phase 7 — Verification (Claude Code + Casey)
 - Add a few real items in Strapi, run `npm run export`, run `astro build` locally, check output.
