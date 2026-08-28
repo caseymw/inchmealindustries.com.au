@@ -245,3 +245,76 @@ read-only scoping is doing its job. Casey minted a separate short-lived
 from both that read-only token and the Admin Token used for MCP) just
 for this one script run. **That token should be revoked now that the
 upload is done** — it was never meant to be long-lived.
+
+**Post-review fixes: broken admin thumbnails and lost hyperlinks.**
+Casey reviewed the migrated content and caught two real bugs:
+
+- **Admin media thumbnails showed as broken/checkerboard**, even though
+  the uploaded files served correctly (`curl` confirmed `200 OK` with
+  correct bytes). Cause: Strapi admin's default
+  `strapi::security` CSP only allows `img-src`/`media-src` from
+  `'self'`, `data:`, `blob:`, and Strapi's own asset CDN — it never
+  knew about `media.inchmealindustries.com.au`. Fixed by extending
+  `contentSecurityPolicy.directives` in `cms/config/middlewares.js`
+  (the standard pattern for any custom S3/R2-style upload provider).
+  Confirmed via the response header after rebuild; Casey confirmed
+  visually after a browser reload.
+
+- **"Visit online" links and hyperlinked producer/company names from
+  the old site never made it into the new content model at all** —
+  not a data-entry miss, a genuine Phase 3/6 gap. The old
+  `*-details.html` pages had a per-show link (e.g. `Visit online
+  https://paviliontheatre.org.au/33variations/`) and linked names
+  inside the credits line (e.g. `Produced by <a
+  href="...">Castle Hill Players</a>`); neither the content model nor
+  `productions/[slug].astro` ever had anywhere to put them. Added
+  `showUrl` to the Production schema and `url` to the
+  `shared.credit` component, wired both through `export.js` and
+  `content.config.ts`, and restored the "Visit online" link and
+  linked credit names in the Astro template to match the original
+  design. Also fixed two content bugs while re-entering the data:
+  Appleton's producer URL was `ttps://...` (missing the `h`) in the
+  source HTML, and Gaslight's "Visit online" link pointed at the
+  Last 5 Years page (a copy-paste mistake on the old site) — Casey
+  supplied the correct Gaslight URL
+  (`https://pymbleplayers.com.au/archive-productions/gaslight`).
+
+**New discovery: Strapi's MCP tool schema lags behind new *top-level*
+content-type fields, independent of token permissions.** After
+adding `showUrl` and rebuilding, `credits[].url` (a field inside an
+existing, already-permitted component) showed up in the MCP tool
+schema immediately, but `showUrl` (a new top-level attribute on
+Production) did not — not with the original token, not after minting
+a fresh **Full access** Admin Token (existing Admin Tokens can't have
+their permissions edited after creation, only at creation time, so a
+new one was needed anyway), not after Casey's admin-UI browser reload
+(which did separately fix a stale "no permissions to see this field"
+error in the regular admin edit form — a client-side cache issue,
+unrelated). The MCP schema for `showUrl` never updated in this
+session. Worked around it by writing `showUrl` and `credits[].url`
+directly via the plain REST Content API (`PUT /api/productions/:id`),
+which reads/writes straight off the schema with no content-manager/MCP
+config layer in between — confirmed working immediately. Publishing
+the updated drafts hit two more snags worth recording:
+- `POST /api/productions/:id/actions/publish` (the pattern this
+  project's own scripts don't use, guessed from the admin
+  content-manager API shape) returned `405 Method Not Allowed` — not
+  a valid public Content API route.
+- The MCP `publish_production` tool, which *had* been working all
+  session, suddenly started returning `"requires re-authorization
+  (token expired)"` for every call, with no clear trigger identified
+  (this was mid-session, not obviously tied to the earlier token
+  swap).
+- What actually worked: `PUT /api/productions/:id?status=published`
+  with an empty `{"data":{}}` body — Strapi v5's Document Service API
+  treats the `status` query param as "publish the current draft
+  as-is." Used for all 6 productions; verified afterward via a
+  populated REST read that every `showUrl` and `credits[].url` value
+  is correct and live.
+
+**Filed as a known rough edge, not yet root-caused:** the MCP
+tool-schema staleness for new top-level fields, and the mid-session
+MCP auth expiry. Both were worked around via direct REST rather than
+solved. Worth watching for on any future schema change made through
+this MCP connection — the REST bypass pattern above is the fallback
+if it recurs.
