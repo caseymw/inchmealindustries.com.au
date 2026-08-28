@@ -223,11 +223,25 @@ static site:
   Instagram social link.
 - All entries published (not left as drafts).
 
-**Known gap: no images uploaded yet.** The MCP tools' `images` field
-takes existing media IDs, not file uploads — Strapi's MCP server
-doesn't expose a media-upload tool (uploads are multipart, not
-JSON-RPC). The production photos are already sitting in
-`site/public/images/work/` from Phase 3 but haven't been pushed into
-Strapi's media library / R2. Still needs either manual drag-and-drop
-in the admin UI per production, or a small one-off script against
-Strapi's REST upload endpoint using `STRAPI_API_TOKEN`.
+**Images uploaded and attached.** The MCP tools' `images` field takes
+existing media IDs, not file uploads — Strapi's MCP server doesn't
+expose a media-upload tool (uploads are multipart, not JSON-RPC).
+Worked around it with a one-off Node script
+(dependency-free, built-in `fetch`/`FormData`) that POSTed each
+production's photos from `site/public/images/work/` to Strapi's REST
+`/api/upload` endpoint, then fed the returned media IDs back through
+`update_production` + `publish_production`. All 17 images (2-4 per
+production, matching what each `*-details.html` originally
+referenced — e.g. Titanic uses `image-2and3.jpg`, not the separate
+`image-2.jpg`/`image-3.jpg` files that exist in the folder but were
+never linked from the old page) are now live via
+`media.inchmealindustries.com.au`.
+
+**Token-scope discovery:** the existing `STRAPI_API_TOKEN` (deliberately
+read-only, per its own comment in `scripts/export-content/.env.example`)
+correctly got a `403 Forbidden` from `/api/upload` — confirms the
+read-only scoping is doing its job. Casey minted a separate short-lived
+**Full access** Content API token (Settings → API Tokens, distinct
+from both that read-only token and the Admin Token used for MCP) just
+for this one script run. **That token should be revoked now that the
+upload is done** — it was never meant to be long-lived.
